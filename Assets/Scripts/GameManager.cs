@@ -1,7 +1,9 @@
 using System.Collections;
 using TMPro;
+using Unity.Cinemachine;
 using Unity.VisualScripting;
 using UnityEngine;
+using UnityEngine.InputSystem;
 
 public class GameManager : MonoBehaviour
 {
@@ -27,6 +29,19 @@ public class GameManager : MonoBehaviour
     public int score = 0;
     public float timeScore = 0f;
 
+    [Header("Menu Pause")]
+    public GameObject menuPause;
+
+    [Header("Menu Iniciar")]
+    public GameObject menuIniciar;
+    bool gameStarted = false;
+
+    [Header("Menu GameOver")]
+    public GameObject menuGameOver;
+    public CinemachineCamera cam;
+    public CinemachineCamera camZoom;
+    public GameObject player;
+
     private void Awake()
     {
         if (Instance == null)
@@ -41,7 +56,7 @@ public class GameManager : MonoBehaviour
 
     private void Start()
     {
-        StartCoroutine(SpawnObstacle());
+        //StartCoroutine(SpawnObstacle());
     }
 
     private void Update()
@@ -49,10 +64,34 @@ public class GameManager : MonoBehaviour
         if (gameOver == true) return;
 
         Score();
+
+        //Pause
+        MetodoPause();
     }
+
+    public void MetodoPause()
+    {
+        if (Keyboard.current.escapeKey.wasPressedThisFrame)
+        {
+            if (Time.timeScale == 0f)
+            {
+
+
+                StartCoroutine(ScaleTime(0f, 1f, 0.5f));
+                menuPause.SetActive(false);
+            }
+            else if (Time.timeScale == 1f)
+            {
+
+                StartCoroutine(ScaleTime(1f, 0f, 0.5f));
+                menuPause.SetActive(true);
+            }
+        }
+    }
+
     private IEnumerator SpawnObstacle()
     {
-        while (!gameOver)
+        while (!gameOver || gameStarted == true)
         {
             var obstacleToSpawn = Random.Range(0, numberSpawn);
 
@@ -95,6 +134,15 @@ public class GameManager : MonoBehaviour
     {
         gameOver = true;
         StopCoroutine(SpawnObstacle());
+        //abrir o menu de game Over
+        menuGameOver.SetActive(true);
+        
+        //Animação de cameras
+        cam.gameObject.SetActive(false);
+        camZoom.gameObject.SetActive(true);
+
+        //Desativar o game Manager
+        gameObject.SetActive(false);
     }
 
     public void Score()
@@ -109,4 +157,48 @@ public class GameManager : MonoBehaviour
 
         }
     }
+
+    public void Enabled()
+    {
+        player.SetActive(true);
+        gameObject.SetActive(true);
+        menuIniciar.SetActive(false);
+
+        gameOver = false;
+        score = 0;
+        timeScore = 0;
+
+        cam.gameObject.SetActive(true);
+        camZoom.gameObject.SetActive(false);
+
+        StartCoroutine(SpawnObstacle());
+    }
+
+
+//===========================Pause Menu=================================
+public IEnumerator ScaleTime(float start, float end, float duration)
+    {
+        //Armazena o tempo inicial
+        float lastTime = Time.realtimeSinceStartup;
+        float timer = 0.0f;
+
+        while(timer < duration)
+        {
+            //Ajusta o tempo de escala
+            Time.timeScale = Mathf.Lerp(start, end, timer / duration);
+
+            //Ajustar o deltaTime para o tempo real
+            Time.fixedDeltaTime = 0.02f * Time.timeScale;
+
+            //Compensar a taxa de quadros
+            timer += (Time.realtimeSinceStartup - lastTime);
+            lastTime = Time.realtimeSinceStartup;
+
+            yield return null;
+        }
+        Time.timeScale = end;
+        Time.fixedDeltaTime = 0.02f * Time.timeScale;
+    }
+
+ 
 }

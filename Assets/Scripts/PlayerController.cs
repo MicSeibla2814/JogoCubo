@@ -1,3 +1,4 @@
+using Unity.Cinemachine;
 using Unity.VisualScripting;
 using UnityEngine;
 using UnityEngine.InputSystem;
@@ -13,13 +14,20 @@ public class PlayerController : MonoBehaviour
 
     [Header("Particulas")]
     public ParticleSystem particleDestruction;
-    private void Start()
+
+    [Header("Cameras")]
+    private CinemachineImpulseSource _impulseSource;//Variavel para referencia
+
+
+    private void Awake()
     {
         rb = GetComponent<Rigidbody>();
+        _impulseSource = GetComponent<CinemachineImpulseSource>();
     }
 
     private void FixedUpdate()
     {
+        if (GameManager.Instance == null) return;
         Movimentacao();
     }
     private void OnMove(InputValue value)
@@ -47,8 +55,18 @@ public class PlayerController : MonoBehaviour
             Instantiate(
                 particleDestruction, transform.position, Quaternion.identity);
             GameManager.Instance.GameOver();
-            Destroy(gameObject);
-       
+            //Destroy(gameObject);
+            this.gameObject.SetActive(false);
+            _impulseSource.GenerateImpulse();
+
+        
         }
+    }
+
+    private void OnEnable()
+    {
+        transform.position = new Vector3(0, 1, 0);
+        transform.rotation = Quaternion.identity;
+        rb.linearVelocity = Vector3.zero;
     }
 }
