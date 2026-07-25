@@ -68,5 +68,33 @@ public class PlayerController : MonoBehaviour
         transform.position = new Vector3(0, 1, 0);
         transform.rotation = Quaternion.identity;
         rb.linearVelocity = Vector3.zero;
+        movementInput = Vector2.zero;
+    }
+
+    private void OnDisable()
+    {
+        movementInput = Vector2.zero;
+
+        if (rb != null)
+        {
+            rb.linearVelocity = Vector3.zero;
+            rb.angularVelocity = Vector3.zero;
+        }
+    }
+
+    //Mobile
+    public void EsquerdaPress()
+    {
+        movementInput = new Vector2(-1, 0);
+    }
+
+    public void DireitaPress()
+    {
+        movementInput = new Vector2(1, 0);    
+    }
+
+    public void SoltouBotao()
+    {
+        movementInput = Vector2.zero;
     }
 }

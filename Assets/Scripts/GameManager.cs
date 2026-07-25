@@ -29,6 +29,10 @@ public class GameManager : MonoBehaviour
     public int score = 0;
     public float timeScore = 0f;
 
+    //============================High Score
+    public TextMeshProUGUI txtHighScore;
+    public int highScore = 0;
+
     [Header("Menu Pause")]
     public GameObject menuPause;
 
@@ -56,7 +60,8 @@ public class GameManager : MonoBehaviour
 
     private void Start()
     {
-        //StartCoroutine(SpawnObstacle());
+        highScore = PlayerPrefs.GetInt("HighScore", 0);
+        txtHighScore.text = $"High Score: {highScore}";
     }
 
     private void Update()
@@ -133,6 +138,19 @@ public class GameManager : MonoBehaviour
     public void GameOver()
     {
         gameOver = true;
+
+        if(score > highScore)
+        {
+            highScore = score;
+            //Salvar
+            PlayerPrefs.SetInt("HighScore", highScore);
+            PlayerPrefs.Save();
+        }
+
+        txtHighScore.text = ($"HighScore: {highScore}");
+
+
+
         StopCoroutine(SpawnObstacle());
         //abrir o menu de game Over
         menuGameOver.SetActive(true);
@@ -167,6 +185,10 @@ public class GameManager : MonoBehaviour
         gameOver = false;
         score = 0;
         timeScore = 0;
+
+        txtScore.text = "Score: 0";
+        txtHighScore.text = $"HighScore: {highScore}";
+
 
         cam.gameObject.SetActive(true);
         camZoom.gameObject.SetActive(false);
